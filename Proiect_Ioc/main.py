@@ -1,8 +1,12 @@
+import threading
+
 import numpy as np
 import open3d as o3d
 import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
-import cv2 as cv
+import playsound
+
+import lab2
 
 
 class AppWindow:
@@ -92,25 +96,11 @@ class AppWindow:
             self.close_camera()
 
     def open_camera(self):
-        cap = cv.VideoCapture(0)
-        if not cap.isOpened():
-            print("Cannot open camera")
-            exit()
-
-
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                print("Can't receive frame (stream end?). Exiting ...")
-                break
-            gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            cv.imshow('frame', gray)
-            if cv.waitKey(1) == ord('q'):
-                break
-
-
+        camera_thread = threading.Thread(target=lab2.video_stream)
+        camera_thread.start()
 
     def close_camera(self):
+        lab2.close = True
         pass
         # When everything done, release the capture
         # cap.release()
@@ -195,4 +185,5 @@ def main():
 
 
 if __name__ == "__main__":
+    playsound.playsound('sunete/primary/ui_unlock.wav')
     main()
