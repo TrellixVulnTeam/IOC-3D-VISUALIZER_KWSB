@@ -6,7 +6,9 @@ import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
 import playsound
 
-import lab2
+from lab2 import VideoTracking
+
+is_loading = True
 
 
 class AppWindow:
@@ -17,8 +19,12 @@ class AppWindow:
     MENU_ABOUT = 5
 
     def __init__(self, width, height):
-        self.window = gui.Application.instance.create_window(
-            "Aruco 3D App", width, height)
+        self.width = width
+        self.height = height
+
+        self.video_tracking = VideoTracking(self.width, self.height)
+
+        self.window = gui.Application.instance.create_window("Aruco 3D App", width, height, 200,200)
         w = self.window
 
         self.scene = gui.SceneWidget()
@@ -64,6 +70,7 @@ class AppWindow:
         self.settings_panel.frame = gui.Rect(r.get_right() - width, r.y, width, height)
 
     def open_menu(self):
+        playsound.playsound('sunete/primary/ui_tap-variant-03.wav')
         dlg = gui.FileDialog(gui.FileDialog.OPEN, "Choose file to load", self.window.theme)
         dlg.add_filter(
             ".ply .stl .fbx .obj .off .gltf .glb",
@@ -96,17 +103,17 @@ class AppWindow:
             self.close_camera()
 
     def open_camera(self):
-        camera_thread = threading.Thread(target=lab2.video_stream)
+        playsound.playsound('sunete/primary/ui_tap-variant-03.wav')
+        camera_thread = threading.Thread(target=self.video_tracking.video_stream)
         camera_thread.start()
 
     def close_camera(self):
-        lab2.close = True
+        self.video_tracking.close = True
         pass
-        # When everything done, release the capture
-        # cap.release()
-        # cv.destroyAllWindows()
 
     def menu_about(self):
+        playsound.playsound('sunete/primary/ui_tap-variant-03.wav')
+
         em = self.window.theme.font_size
         dlg = gui.Dialog("About")
 
@@ -180,10 +187,22 @@ def main():
     gui.Application.instance.initialize()
 
     w = AppWindow(1600, 800)
+    global is_loading
+
+    is_loading = False
 
     gui.Application.instance.run()
 
+    playsound.playsound('sunete/primary/ui_lock.wav')
+
+
+def loading_sound():
+    global is_loading
+    while is_loading:
+        playsound.playsound('sunete/secondary/ui_loading.wav')
+
 
 if __name__ == "__main__":
-    playsound.playsound('sunete/primary/ui_unlock.wav')
+    thread = threading.Thread(target=loading_sound)
+    thread.start()
     main()
