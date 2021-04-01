@@ -6,7 +6,8 @@ import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
 import playsound
 
-from lab2 import VideoTracking
+from video_manager import VideoTracking
+
 
 is_loading = True
 
@@ -199,7 +200,7 @@ def main():
 def loading_sound():
     global is_loading
     while is_loading:
-        playsound.playsound('sunete/secondary/ui_loading.wav')
+        playsound.playsound('sunete/secondary/loading.wav')
 
 
 if __name__ == "__main__":

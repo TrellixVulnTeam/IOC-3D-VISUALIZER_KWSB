@@ -1,16 +1,17 @@
-import imutils as imutils
+import threading
+
 import cv2
 import mouse
-import playsound
+from sound_manager import SoundManager
 
 
 class VideoTracking:
-    def __init__(self, width, height):
-        self.cam_width = 800
-        self.cam_height = 600
+    def __init__(self, int_width, int_height, cam_width, cam_height):
+        self.cam_width = cam_width
+        self.cam_height = cam_height
 
-        self.interface_width = width
-        self.interface_height = height
+        self.interface_width = int_width
+        self.interface_height = int_height
 
         self.face_cascade = cv2.CascadeClassifier('venv\Lib\site-packages\cv2\data\haarcascade_frontalface_default.xml')
 
@@ -19,16 +20,16 @@ class VideoTracking:
     def calibrate(self, vid, direction):
         self.close = False
         calibrated_value = None
-        # medie -> pentru zogmot
-        for i in range(300):
+
+        for i in range(60):
             ret, frame = vid.read()
-            frame = imutils.resize(frame, width=self.cam_width, height=self.cam_height)
+            frame = cv2.resize(frame, (self.cam_width, self.cam_height))
             if ret:
                 cvImg = cv2.flip(frame, 1)
                 gray = cv2.cvtColor(cvImg, cv2.COLOR_BGR2GRAY)
                 faceRects = self.face_cascade.detectMultiScale(gray, 1.3, 5)
 
-                cv2.putText(cvImg, 'Calibrate ' + str(direction) + ': ' + str(int(i / 3)) + '%',
+                cv2.putText(cvImg, 'Calibrate ' + str(direction) + ': ' + str(int(i / 0.6)) + '%',
                             (int(self.cam_width / 2) - 150, int(self.cam_height / 2)),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 4, cv2.LINE_AA)
                 if direction == 'Left':
@@ -58,21 +59,25 @@ class VideoTracking:
         return calibrated_value
 
     def video_stream(self):
+        sound_manager = SoundManager()
         vid = cv2.VideoCapture(0)
-        xf_min = self.calibrate(vid, 'Left')
-        playsound.playsound('sunete/hero/hero_simple-celebration-02.wav')
-        xf_max = self.calibrate(vid, 'Right')
-        playsound.playsound('sunete/hero/hero_simple-celebration-02.wav')
-        yf_min = self.calibrate(vid, 'Up')
-        playsound.playsound('sunete/hero/hero_simple-celebration-02.wav')
-        yf_max = self.calibrate(vid, 'Down')
-        playsound.playsound('sunete/hero/hero_simple-celebration-03.wav')
 
-        cv2.destroyAllWindows()
+        xf_min = self.calibrate(vid, 'Left')
+        thread = threading.Thread(target=sound_manager.play_calibrate_sound)
+        thread.start()
+        xf_max = self.calibrate(vid, 'Right')
+        thread = threading.Thread(target=sound_manager.play_calibrate_sound)
+        thread.start()
+        yf_min = self.calibrate(vid, 'Up')
+        thread = threading.Thread(target=sound_manager.play_calibrate_sound)
+        thread.start()
+        yf_max = self.calibrate(vid, 'Down')
+        thread = threading.Thread(target=sound_manager.play_successfully_calibration_sound)
+        thread.start()
 
         while not self.close:
             ret, frame = vid.read()
-            frame = imutils.resize(frame, width=self.cam_width, height=self.cam_height)
+            frame = cv2.resize(frame, (self.cam_width, self.cam_height))
             if ret:
                 cvImg = cv2.flip(frame, 1)
                 gray = cv2.cvtColor(cvImg, cv2.COLOR_BGR2GRAY)
@@ -117,7 +122,7 @@ class VideoTracking:
                     if yp > self.interface_height:
                         yp = self.interface_height
 
-                    cvImg = cv2.circle(cvImg, (xp, yp), 25, (0, 0, 255), -1)
+                    cv2.imshow('frame', cvImg)
                     mouse.move(xp / xp_max * 1920, yp / yp_max * 1080, absolute=True, duration=0)
 
             if cv2.waitKey(1) & 0xFF == ord('r'):
