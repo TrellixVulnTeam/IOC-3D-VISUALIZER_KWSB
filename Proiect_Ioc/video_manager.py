@@ -5,7 +5,7 @@ import mouse
 from sound_manager import SoundManager
 
 
-class VideoTracking:
+class VideoManager:
     def __init__(self, int_width, int_height, cam_width, cam_height):
         self.cam_width = cam_width
         self.cam_height = cam_height
@@ -129,4 +129,3 @@ class VideoTracking:
                 break
 
         vid.release()
-        cv2.destroyAllWindows()

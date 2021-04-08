@@ -2,8 +2,8 @@ import json
 
 
 class ColorManager:
-    def __init__(self):
-        f = open("resources/styles/style.json", 'r')
+    def __init__(self, style):
+        f = open("resources/styles/" + style + ".json", 'r')
         self.data = json.load(f)
 
     def set_colors(self, main_window, buttons, check_buttons, camera_widget, object_scene_widget):
