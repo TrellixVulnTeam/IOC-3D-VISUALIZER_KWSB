@@ -14,12 +14,14 @@ from video_manager import VideoManager
 from scene_manager import SceneManager
 from process_communication_manager import ProcessCommunicationManager
 from audio_manager import AudioManager
+from plot_manager import PlotManager
+from play_manager import PlayManager
 
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self, style):
         super(Ui, self).__init__()
-        uic.loadUi('qt_interface.ui', self)
+        uic.loadUi('resources/interface/qt_interface.ui', self)
 
         self.color_manager = ColorManager(style)
         self.sound_manager = SoundManager()
@@ -36,6 +38,8 @@ class Ui(QtWidgets.QMainWindow):
         self.rotateRightButton.clicked.connect(self.on_rotate_right_button_clicked)
         self.rotateUpButton.clicked.connect(self.on_rotate_up_button_clicked)
         self.rotateDownButton.clicked.connect(self.on_rotate_down_button_clicked)
+        self.plotButton.clicked.connect(self.on_plot_button_clicked)
+        self.playButton.clicked.connect(self.on_play_button_clicked)
         self.zoomInButton.clicked.connect(self.on_zoom_in_button_clicked)
         self.zoomOutButton.clicked.connect(self.on_zoom_out_button_clicked)
         self.videoControlCheckBox.toggled.connect(self.on_video_control_checkbox_checked)
@@ -46,18 +50,26 @@ class Ui(QtWidgets.QMainWindow):
         self.processCommunicationManager = ProcessCommunicationManager()
         self.show()
 
-        self.audio_manager = AudioManager(self)
-        self.initAudioListener()
+        # self.audio_manager = AudioManager(self)
+        # self.initAudioListener()
 
+        self.plot_manager = PlotManager()
+        self.play_manager = PlayManager()
 
     def initAudioListener(self):
         self.audio_manager.start()
 
     def getAllButtons(self):
         buttons = [self.loadButton, self.rotateLeftButton, self.rotateRightButton, self.rotateUpButton,
-                   self.rotateDownButton, self.zoomInButton, self.zoomOutButton]
+                   self.rotateDownButton, self.zoomInButton, self.zoomOutButton, self.plotButton, self.playButton]
 
         return buttons
+
+    def on_plot_button_clicked(self):
+        self.plot_manager.plot_data()
+
+    def on_play_button_clicked(self):
+        self.play_manager.play()
 
     def initializeColors(self):
         self.color_manager.set_colors(self, self.buttons, self.checkboxes, self.cameraWidget, self.sceneWidget)
@@ -122,7 +134,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def initCamera(self):
         self.camera_manager.close = False
-        img = cv2.imread('resources/images/loading.png')
+        img = cv2.imread('resources/images/noimage.png')
         img = cv2.resize(img, (self.cameraWidget.width(), self.cameraWidget.height()))
         cv2.imshow('frame', img)
 
@@ -140,7 +152,7 @@ class Ui(QtWidgets.QMainWindow):
     def destroyCamera(self):
         self.camera_manager.close = True
         self.camera_thread.join()
-        img = cv2.imread('resources/images/turnedoff.png')
+        img = cv2.imread('resources/images/noimage.png')
         img = cv2.resize(img, (self.cameraWidget.width(), self.cameraWidget.height()))
         cv2.imshow('frame', img)
 
