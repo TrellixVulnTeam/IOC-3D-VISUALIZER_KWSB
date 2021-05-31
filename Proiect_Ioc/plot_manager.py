@@ -1,5 +1,6 @@
 import numpy
 import numpy as np
+import scipy.signal
 import matplotlib.pyplot as plt
 
 
@@ -95,3 +96,5 @@ class PlotManager:
 
         plt.legend(["Target", "NONtarget", "Trigger"], bbox_to_anchor=(1.5, 0.5), loc='center', borderaxespad=0.)
         plt.show()
+
+
