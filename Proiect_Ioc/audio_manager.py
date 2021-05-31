@@ -39,6 +39,9 @@ class AudioManager(threading.Thread):
     def getQuitFlag(self):
         return self.quit
 
+    def setQuitFlag(self):
+        self.quit = True
+
     def textToSpeech(self, myText):
         self.engine.say(myText)
         self.engine.runAndWait()
@@ -52,25 +55,31 @@ class AudioManager(threading.Thread):
         self.state_2()
 
     def state_2(self):
-        text = self.speechToText()
-
-        while text["transcription"] is None or (
-                text["transcription"].lower() != "hello siri" and self.isInitialized == False):
+        if not self.quit:
             text = self.speechToText()
-            self.isInitialized = True
 
-        print("Initialized")
-        if not text["success"] and text["error"] == "API unavailable":
-            print("ERROR: {}\n close program".format(text["error"]))
+            while not self.quit and (text["transcription"] is None or (
+                    text["transcription"].lower() != "hello siri" and self.isInitialized == False)):
+                text = self.speechToText()
+                self.isInitialized = True
+
+            print("Initialized")
+            if not text["success"] and text["error"] == "API unavailable":
+                print("ERROR: {}\n close program".format(text["error"]))
+            else:
+                self.state_3(text)
         else:
-            self.state_3(text)
+            print("Quit event triggered")
 
     def state_3(self, text):
-        if not text["success"]:
-            print("I didn't catch that. What did you say?\n")
-            self.state_2()
+        if not self.quit:
+            if not text["success"]:
+                print("I didn't catch that. What did you say?\n")
+                self.state_2()
+            else:
+                self.state_4(text)
         else:
-            self.state_4(text)
+            print("Quit event triggered")
 
     def state_4(self, text):
         print(text["transcription"])
@@ -83,8 +92,16 @@ class AudioManager(threading.Thread):
             self.interface.on_rotate_left_button_clicked()
         elif text["transcription"].lower() == 'right':
             self.interface.on_rotate_right_button_clicked()
+        elif text["transcription"].lower() == 'zoom in':
+            self.interface.on_zoom_in_button_clicked()
+        elif text["transcription"].lower() == 'zoom out':
+            self.interface.on_zoom_out_button_clicked()
 
-        self.state_1()
+        if not self.quit:
+            self.state_1()
+        else:
+            print("Quit event triggered")
+
 
     def run(self):
         self.state_1()

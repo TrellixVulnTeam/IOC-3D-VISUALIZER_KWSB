@@ -1,3 +1,4 @@
+import copy
 import threading
 
 import numpy as np
@@ -7,13 +8,10 @@ import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
 from multiprocessing.connection import Listener
 
-import psutil
-import win32gui
-import win32process
-
-
 class SceneManager:
     def __init__(self, width, height):
+        self.mesh = None
+        self.material = None
         self.width = width
         self.height = height
 
@@ -33,19 +31,18 @@ class SceneManager:
         geometry = None
         geometry_type = o3d.io.read_file_geometry_type(path)
 
-        mesh = None
         if geometry_type & o3d.io.CONTAINS_TRIANGLES:
-            mesh = o3d.io.read_triangle_mesh(path)
-        if mesh is not None:
-            if len(mesh.triangles) == 0:
-                mesh = None
+            self.mesh = o3d.io.read_triangle_mesh(path)
+        if self.mesh is not None:
+            if len(self.mesh.triangles) == 0:
+                self.mesh = None
             else:
-                mesh.compute_vertex_normals()
-                mesh.paint_uniform_color([0, 0, 0])
-                geometry = mesh
-            if not mesh.has_triangle_uvs():
-                uv = np.array([[0.0, 0.0]] * (3 * len(mesh.triangles)))
-                mesh.triangle_uvs = o3d.utility.Vector2dVector(uv)
+                self.mesh.compute_vertex_normals()
+                self.mesh.paint_uniform_color([0, 0, 0])
+                geometry = self.mesh
+            if not self.mesh.has_triangle_uvs():
+                uv = np.array([[0.0, 0.0]] * (3 * len(self.mesh.triangles)))
+                self.mesh.triangle_uvs = o3d.utility.Vector2dVector(uv)
         else:
             print("[Info]", path, "appears to be a point cloud")
 
@@ -66,9 +63,9 @@ class SceneManager:
 
         if geometry is not None:
             try:
-                material = rendering.Material()
-                material.shader = "normals"
-                self.scene.scene.add_geometry("__model__", geometry, material)
+                self.material = rendering.Material()
+                self.material.shader = "normals"
+                self.scene.scene.add_geometry("__model__", geometry, self.material)
                 bounds = geometry.get_axis_aligned_bounding_box()
                 self.scene.setup_camera(60, bounds, bounds.get_center())
             except Exception as e:
@@ -78,6 +75,25 @@ class SceneManager:
     def close():
         gui.Application.instance.quit()
 
+    def act(self, message):
+        #self.scene.scene.clear_geometry()
+        self.scene.scene.remove_geometry("__model__")
+
+        if message == 'left':
+            R = self.mesh.get_rotation_matrix_from_xyz((0, -np.pi / 2, 0))
+        elif message == 'right':
+            R = self.mesh.get_rotation_matrix_from_xyz((0, np.pi / 2, 0))
+        elif message == 'up':
+            R = self.mesh.get_rotation_matrix_from_xyz((-np.pi / 2, 0,0))
+            print('up')
+        elif message == 'down':
+            R = self.mesh.get_rotation_matrix_from_xyz((np.pi/2, 0, 0))
+            print('down')
+        else:
+            print('unknown command')
+
+        self.mesh.rotate(R, center=(0, 0, 0))
+        self.scene.scene.add_geometry("__model__", self.mesh, self.material)
 
 def initialize_listener(o3d_scene):
     print("Starting listening")
@@ -94,7 +110,9 @@ def initialize_listener(o3d_scene):
             _, path = msg.split(" ")
             o3d_scene.load(path)
         else:
-            print(msg)
+            print('Mesajul primit este: ' + msg)
+            o3d_scene.act(msg)
+
     print('Connection closed')
     listener.close()
     o3d_scene.close()

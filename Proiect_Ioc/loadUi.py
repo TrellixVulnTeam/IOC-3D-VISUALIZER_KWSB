@@ -40,8 +40,6 @@ class Ui(QtWidgets.QMainWindow):
         self.rotateDownButton.clicked.connect(self.on_rotate_down_button_clicked)
         self.plotButton.clicked.connect(self.on_plot_button_clicked)
         self.playButton.clicked.connect(self.on_play_button_clicked)
-        self.zoomInButton.clicked.connect(self.on_zoom_in_button_clicked)
-        self.zoomOutButton.clicked.connect(self.on_zoom_out_button_clicked)
         self.videoControlCheckBox.toggled.connect(self.on_video_control_checkbox_checked)
         self.voiceControlCheckBox.toggled.connect(self.on_voice_control_checkbox_checked)
         self.darkControlCheckBox.toggled.connect(self.on_dark_theme_control_checkbox_checked)
@@ -50,18 +48,17 @@ class Ui(QtWidgets.QMainWindow):
         self.processCommunicationManager = ProcessCommunicationManager()
         self.show()
 
-        # self.audio_manager = AudioManager(self)
-        # self.initAudioListener()
-
         self.plot_manager = PlotManager()
         self.play_manager = PlayManager()
 
     def initAudioListener(self):
+        self.audio_manager = AudioManager(self)
+
         self.audio_manager.start()
 
     def getAllButtons(self):
         buttons = [self.loadButton, self.rotateLeftButton, self.rotateRightButton, self.rotateUpButton,
-                   self.rotateDownButton, self.zoomInButton, self.zoomOutButton, self.plotButton, self.playButton]
+                   self.rotateDownButton, self.plotButton, self.playButton]
 
         return buttons
 
@@ -105,14 +102,6 @@ class Ui(QtWidgets.QMainWindow):
         self.sound_manager.play_button_click_sound()
         self.processCommunicationManager.send_message("down")
 
-    def on_zoom_in_button_clicked(self):
-        self.sound_manager.play_button_click_sound()
-        self.processCommunicationManager.send_message("zoomIn")
-
-    def on_zoom_out_button_clicked(self):
-        self.sound_manager.play_button_click_sound()
-        self.processCommunicationManager.send_message("zoomOut")
-
     def on_dark_theme_control_checkbox_checked(self):
         self.sound_manager.play_button_click_sound()
         if self.darkControlCheckBox.checkState() == 2:
@@ -131,6 +120,10 @@ class Ui(QtWidgets.QMainWindow):
 
     def on_voice_control_checkbox_checked(self):
         self.sound_manager.play_button_click_sound()
+        if self.voiceControlCheckBox.checkState() == 2:
+            self.initAudioListener()
+        else:
+            self.audio_manager.setQuitFlag()
 
     def initCamera(self):
         self.camera_manager.close = False

@@ -119,46 +119,6 @@
      <string>DOWN</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="zoomInButton">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>210</y>
-      <width>75</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-      <kerning>true</kerning>
-     </font>
-    </property>
-    <property name="text">
-     <string>ZOOM IN</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="zoomOutButton">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>280</y>
-      <width>75</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-      <kerning>true</kerning>
-     </font>
-    </property>
-    <property name="text">
-     <string>ZOOM OUT</string>
-    </property>
-   </widget>
    <widget class="QWidget" name="cameraWidget" native="true">
     <property name="geometry">
      <rect>
@@ -265,8 +225,8 @@
    <widget class="QPushButton" name="plotButton">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>350</y>
+      <x>280</x>
+      <y>210</y>
       <width>75</width>
       <height>51</height>
      </rect>
@@ -285,8 +245,8 @@
    <widget class="QPushButton" name="playButton">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>350</y>
+      <x>280</x>
+      <y>280</y>
       <width>75</width>
       <height>51</height>
      </rect>
